@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>北海道天気マップ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    #map { height: 100vh; width: 100vw; }
+  h1 {
+  white-space: nowrap;        /* テキストを1行に */
+  width: 200px;               /* 横幅を指定（例） */
+  margin-bottom: -25px;        /* 下に20pxの余白 */
+  position: relative;
+  top: -21px;                 /* 下に10pxずらす */
+  left: -44px;  /* 文字を左に20px移動 */
+  transform: scaleX(0.5); /* 横幅80%に縮小 */
+
+}
+
+  </style>
+</head>
+<body>
+    <h1>天気予報が絶対正しいとは限りません。</h1>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const apiKey = "bdfb0ea9308e7b93cce3c484a8659513";
+
+const cities = [
+  { name: "札幌市", lat: 43.06417, lon: 141.34694 },
+  { name: "旭川市", lat: 43.77056, lon: 142.365 },
+  { name: "函館市", lat: 41.76879, lon: 140.72883 },
+  { name: "小樽市", lat: 43.19028, lon: 141.00361 },
+  { name: "室蘭市", lat: 42.315, lon: 140.975 },
+  { name: "釧路市", lat: 42.98444, lon: 144.38194 },
+  { name: "帯広市", lat: 42.92361, lon: 143.19639 },
+  { name: "北見市", lat: 43.80444, lon: 143.88861 },
+  { name: "夕張市", lat: 43.06417, lon: 141.87528 },
+  { name: "岩見沢市", lat: 43.19528, lon: 141.77 },
+  { name: "網走市", lat: 44.02083, lon: 144.27333 },
+  { name: "留萌市", lat: 43.93306, lon: 141.635 },
+  { name: "苫小牧市", lat: 42.63444, lon: 141.605 },
+  { name: "稚内市", lat: 45.41472, lon: 141.67389 },
+  { name: "美唄市", lat: 43.33278, lon: 141.89361 },
+  { name: "芦別市", lat: 43.46194, lon: 142.22389 },
+  { name: "江別市", lat: 43.11667, lon: 141.56 },
+  { name: "赤平市", lat: 43.71667, lon: 142.01667 },
+  { name: "紋別市", lat: 44.35528, lon: 143.35472 },
+  { name: "士別市", lat: 44.35, lon: 142.4 },
+  { name: "名寄市", lat: 44.35556, lon: 142.46389 },
+  { name: "三笠市", lat: 43.27972, lon: 141.81972 },
+  { name: "根室市", lat: 43.33333, lon: 145.57611 },
+  { name: "千歳市", lat: 42.81444, lon: 141.65 },
+  { name: "滝川市", lat: 43.55278, lon: 141.91333 },
+  { name: "砂川市", lat: 43.53333, lon: 141.9 },
+  { name: "歌志内市", lat: 43.61111, lon: 142.11861 },
+  { name: "深川市", lat: 43.60611, lon: 142.0675 },
+  { name: "富良野市", lat: 43.34361, lon: 142.37361 },
+  { name: "登別市", lat: 42.40278, lon: 141.05639 },
+  { name: "恵庭市", lat: 42.92444, lon: 141.60556 },
+  { name: "伊達市", lat: 42.44222, lon: 140.86778 },
+  { name: "北広島市", lat: 42.98917, lon: 141.57972 },
+  { name: "石狩市", lat: 43.17944, lon: 141.33389 },
+  { name: "北斗市", lat: 41.82889, lon: 140.70583 },
+  { name: "当別町", lat: 43.2925, lon: 141.52361 },
+  { name: "新篠津村", lat: 43.25472, lon: 141.5875 },
+  { name: "松前町", lat: 41.39472, lon: 140.12111 },
+  { name: "福島町", lat: 41.47944, lon: 140.17972 },
+  { name: "知内町", lat: 41.54472, lon: 140.39611 },
+  { name: "木古内町", lat: 41.77583, lon: 140.52833 },
+  { name: "七飯町", lat: 41.87722, lon: 140.69167 },
+  { name: "鹿部町", lat: 42.07889, lon: 140.85833 },
+  { name: "森町", lat: 42.29444, lon: 140.88583 },
+  { name: "八雲町", lat: 42.49278, lon: 140.98472 },
+  { name: "長万部町", lat: 42.52944, lon: 140.84056 },
+  { name: "江差町", lat: 41.84167, lon: 140.20361 },
+  { name: "上ノ国町", lat: 41.78806, lon: 140.29417 },
+  { name: "厚沢部町", lat: 41.98278, lon: 140.31722 },
+  { name: "乙部町", lat: 42.14833, lon: 140.21222 },
+  { name: "今金町", lat: 42.3875, lon: 140.29139 },
+  { name: "せたな町", lat: 42.40694, lon: 139.89139 },
+  { name: "島牧村", lat: 42.45278, lon: 140.01222 },
+  { name: "寿都町", lat: 42.54917, lon: 140.13667 },
+  { name: "黒松内町", lat: 42.66139, lon: 140.17528 },
+  { name: "蘭越町", lat: 42.79917, lon: 140.24583 },
+  { name: "ニセコ町", lat: 42.80556, lon: 140.67833 },
+  { name: "真狩村", lat: 42.81333, lon: 140.74833 },
+  { name: "留寿都村", lat: 42.84056, lon: 140.80889 },
+  { name: "喜茂別町", lat: 42.86806, lon: 140.78444 },
+  { name: "京極町", lat: 42.87556, lon: 140.77167 },
+  { name: "倶知安町", lat: 42.90472, lon: 140.68722 },
+  { name: "共和町", lat: 42.925, lon: 140.61194 },
+  { name: "岩内町", lat: 42.94222, lon: 140.57222 },
+  { name: "泊村", lat: 42.9675, lon: 140.50056 },
+  { name: "神恵内村", lat: 42.97889, lon: 140.49417 },
+  { name: "積丹町", lat: 43.06139, lon: 140.48444 },
+  { name: "古平町", lat: 43.12528, lon: 140.56667 },
+  { name: "仁木町", lat: 43.1375, lon: 140.69417 },
+  { name: "余市町", lat: 43.15111, lon: 140.71778 },
+  { name: "赤井川村", lat: 43.20056, lon: 140.63694 },
+  { name: "南幌町", lat: 43.00972, lon: 141.70028 },
+  { name: "奈井江町", lat: 43.45472, lon: 141.85833 },
+  { name: "上砂川町", lat: 43.48806, lon: 141.81139 },
+  { name: "由仁町", lat: 42.82222, lon: 141.81889 },
+  { name: "長沼町", lat: 42.81222, lon: 141.93917 },
+  { name: "栗山町", lat: 42.77722, lon: 141.99528 },
+  { name: "月形町", lat: 43.37083, lon: 141.88778 },
+  { name: "浦臼町", lat: 43.46889, lon: 141.82361 },
+  { name: "新十津川町", lat: 43.57417, lon: 141.85889 },
+  { name: "妹背牛町", lat: 43.61222, lon: 141.96583 },
+  { name: "秩父別町", lat: 43.66833, lon: 141.98583 },
+  { name: "雨竜町", lat: 43.69861, lon: 141.98611 },
+  { name: "北竜町", lat: 43.68333, lon: 142.06111 },
+  { name: "沼田町", lat: 43.73333, lon: 142.01667 },
+  { name: "鷹栖町", lat: 43.76667, lon: 142.25 },
+  { name: "東神楽町", lat: 43.75, lon: 142.4 },
+  { name: "当麻町", lat: 43.75, lon: 142.3 },
+  { name: "比布町", lat: 43.7, lon: 142.3 },
+
+  // 山（北海道の有名な山）
+  { name: "大雪山（旭岳）", lat: 43.66972, lon: 142.80778 },
+  { name: "十勝岳", lat: 43.55083, lon: 142.83278 },
+  { name: "羊蹄山", lat: 42.86778, lon: 140.80944 },
+  { name: "利尻山", lat: 45.2375, lon: 141.22722 },
+  { name: "羅臼岳", lat: 44.02333, lon: 145.68806 },
+  { name: "恵山", lat: 41.81056, lon: 140.98222 },
+  { name: "ニセコアンヌプリ", lat: 42.80389, lon: 140.70917 },
+  { name: "幌尻岳", lat: 42.52806, lon: 142.60611 },
+  { name: "斜里岳", lat: 43.82944, lon: 144.67389 },
+  { name: "雌阿寒岳", lat: 43.38611, lon: 144.00944 },
+  { name: "樽前山", lat: 42.68778, lon: 141.36056 },
+  { name: "駒ヶ岳（渡島）", lat: 42.06333, lon: 140.66972 },
+  { name: "風不死岳", lat: 42.69167, lon: 141.37667 },
+  { name: "アポイ岳", lat: 42.15778, lon: 142.05944 },
+  { name: "藻岩山", lat: 43.01111, lon: 141.31611 },
+  { name: "手稲山", lat: 43.12389, lon: 141.19278 },
+  { name: "三段山", lat: 43.41917, lon: 142.57444 },
+  { name: "芦別岳", lat: 43.38278, lon: 142.465 },
+  { name: "ピンネシリ", lat: 44.60472, lon: 142.24417 },
+  { name: "夕張岳", lat: 43.15972, lon: 142.13444 },
+  { name: "オプタテシケ山", lat: 43.46444, lon: 142.78833 },
+  { name: "トムラウシ山", lat: 43.58528, lon: 142.84722 },
+  { name: "石狩岳", lat: 43.48972, lon: 142.92639 },
+  { name: "音更山", lat: 43.37389, lon: 143.02083 },
+  { name: "芦別山（小芦別）", lat: 43.37083, lon: 142.42306 },
+  { name: "ニペソツ山", lat: 43.36833, lon: 143.00889 },
+  { name: "ポロシリ岳", lat: 42.68639, lon: 143.13472 },
+  { name: "白雲岳", lat: 43.68778, lon: 142.92278 },
+  { name: "小泉岳", lat: 43.68556, lon: 142.875 },
+  { name: "黒岳", lat: 43.72139, lon: 142.94417 }
+
+];
+
+    const map = L.map('map').setView([43.5, 142.0], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    function getClothingAdvice(temp, weatherDesc) {
+      if (temp >= 30) return "半袖でOK";
+      if (temp >= 29) return "半袖でOK";
+      if (temp >= 28) return "半袖でOK";
+      if (temp >= 27) return "半袖でOK";
+      if (temp >= 26) return "半袖でOK";
+      if (temp >= 25) return "半袖でOK";
+      if (temp >= 24) return "半袖でOK";
+      if (temp >= 23) return "薄手の長袖がおすすめ";
+      if (temp >= 22) return "薄手の長袖がおすすめ";
+      if (temp >= 21) return "薄手の長袖がおすすめ";
+      if (temp >= 20) return "薄手の長袖がおすすめ";
+      if (temp >= 19) return "上着を忘れずに";
+      if (temp >= 18) return "上着を忘れずに";
+      if (temp >= 17) return "上着を忘れずに";
+      if (temp >= 16) return "上着を忘れずに";
+      if (temp >= 15) return "上着を忘れずに";
+      if (temp >= 14) return "上着を忘れずに";
+      if (temp >= 13) return "上着を忘れずに";
+      if (temp >= 12) return "上着を忘れずに";
+      if (temp >= 11) return "上着を忘れずに";
+      if (temp >= 10) return "ジャンバーやコートが必要";
+      if (temp >= 9) return "ジャンバーやコートが必要";
+      if (temp >= 8) return "ジャンバーやコートが必要";
+      if (temp >= 7) return "ジャンバーやコートが必要";
+      if (temp >= 6) return "ジャンバーやコートが必要";
+      if (temp >= 5) return "ジャンバーやコートが必要";
+      if (temp >= 4) return "ジャンバーやコートが必要";
+      if (temp >= 3) return "ジャンバーやコートが必要";
+      if (temp >= 2) return "ジャンバーやコートが必要";
+      if (temp >= 1) return "ジャンバーやコートが必要";
+      if (temp >= 0) return "ジャンバーやコートが必要";
+      return "防寒対策をしっかり";
+    }
+
+    function getWeatherStatus(desc) {
+      if (desc.includes("雨")) return "雨";
+      if (desc.includes("曇")) return "曇り";
+      if (desc.includes("晴")) return "晴れ";
+      return "快適";
+    }
+
+    cities.forEach(city => {
+      const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${city.lat}&lon=${city.lon}&appid=${apiKey}&units=metric&lang=ja`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const todayData = data.list[0];
+          const temps = data.list.slice(0, 8).map(d => d.main.temp);
+          const minTemp = Math.min(...temps);
+          const maxTemp = Math.max(...temps);
+          const pop = data.list[0].pop * 100;
+
+          const icon = todayData.weather[0].icon;
+          const weatherDesc = todayData.weather[0].description;
+          const clothing = getClothingAdvice(todayData.main.temp, weatherDesc);
+          const weatherStatus = getWeatherStatus(weatherDesc);
+
+          const popupText = `
+            <strong>${city.name}</strong><br/>
+            ☀️ 天気: ${weatherStatus}<br/>
+            🌡️ 5時間以内の気温: ${Math.round(todayData.main.temp)}℃<br/>
+            🔼 最高: ${Math.round(maxTemp)}℃　🔽 最低: ${Math.round(minTemp)}℃<br/>
+            ☔ 降水確率: ${Math.round(pop)}%<br/>
+            👕 ${clothing}<br/>
+            <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="天気アイコン" />
+          `;
+
+          L.marker([city.lat, city.lon]).addTo(map).bindPopup(popupText);
+        })
+        .catch(err => {
+          console.error(`${city.name} の天気取得に失敗:`, err);
+        });
+    });
+  </script>
+</body>
+</html>
